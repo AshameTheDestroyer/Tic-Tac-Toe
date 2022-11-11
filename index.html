@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Hashem Wannous">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #0093FF, #FF2157 70%);
+        }
+        table {
+            position: absolute;
+            top: 50%;
+            right: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid #4FD05F;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 0; 
+            margin: 0;
+        }
+        .grid {
+            width : 150px;
+            height : 150px;
+        }
+        #title {
+            text-align: left;
+            background-color: black;
+            color: white;
+            border-bottom: 3px solid #4FD05F;
+            padding: 3px;
+            font-family: Tahoma;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <table id="table">
+        <tr>
+            <td id="title" colspan="4">
+                Tic Tac Toe
+                <option value=""></option>
+            </td>
+        </tr>
+    </table>
+
+    <script>
+        var turn = 'o';
+        var moves = Array(9).fill('');
+        var images = Array(9).fill(null);
+        var movesPlayed = 0;
+        var winner = null;
+
+        var table = document.getElementById('table');
+        for (let i = 0; i < 3; i++) {
+            var tr = document.createElement('tr');
+            table.appendChild(tr);
+            for (let i = 0; i < 3; i++) {
+                var td = document.createElement('td');
+                tr.appendChild(td);
+                var div = document.createElement('div');
+                div.className = 'grid';
+                td.appendChild(div);
+            }
+        }
+
+        var grids = Array.from(document.getElementsByClassName('grid'));
+        grids.forEach((grid, i) => {
+            if (winner != null) { return; }
+            grid.onclick = function() { gridClick(grid, i); };
+            grid.style.backgroundColor = i % 2 == 0 ? '#EEEEEE' : '#222222';
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'KeyR') {
+                document.location.reload();
+            }
+            var numKeys = [
+                'Numpad7', 'Numpad8', 'Numpad9',
+                'Numpad4', 'Numpad5', 'Numpad6',
+                'Numpad1', 'Numpad2', 'Numpad3'
+            ];
+            numKeys.forEach((numKey, i) => {
+                if (event.code === numKey) {
+                    gridClick(grids[i], i);
+                }
+            });
+        });
+
+        function gridClick(grid, i) {
+            if (moves[i] != '' || winner != null) { return; }
+
+            var image = document.createElement('img');
+
+            image.src = turn === 'o' ? 'Images/o.png' : 'Images/x.png';
+            image.style.width = '150px';
+            image.style.height = '150px';
+            
+            grid.appendChild(image);
+            images[i] = image;
+
+            moves[i] = turn;
+            turn = turn === 'o' ? 'x' : 'o';
+            var winCase = checkWinner();
+            if (winCase != -1) {
+                celebrateWinner(winCase);
+                return; 
+            }
+            movesPlayed++;
+            if (movesPlayed >= 9) { celebrateWinner(-2); }
+        };
+
+        function checkWinner() {
+            var winCases = Array(8);
+            winCases[0] = (moves[0] != '' && moves[0] === moves[1] && moves[0] === moves[2]);
+            winCases[1] = (moves[3] != '' && moves[3] === moves[4] && moves[3] === moves[5]);
+            winCases[2] = (moves[6] != '' && moves[6] === moves[7] && moves[6] === moves[8]);
+            winCases[3] = (moves[0] != '' && moves[0] === moves[3] && moves[0] === moves[6]);
+            winCases[4] = (moves[1] != '' && moves[1] === moves[4] && moves[1] === moves[7]);
+            winCases[5] = (moves[2] != '' && moves[2] === moves[5] && moves[2] === moves[8]);
+            winCases[6] = (moves[0] != '' && moves[0] === moves[4] && moves[0] === moves[8]);
+            winCases[7] = (moves[2] != '' && moves[2] === moves[4] && moves[2] === moves[6]);
+
+            var win = -1;
+            winCases.forEach((winCase, i) => {
+                if (winCase) { win = i; }
+            });
+            return win;
+        }
+        
+        function celebrateWinner(winCase) {
+            if (winCase === -1) { return; }
+
+            if (winCase === -2) {
+                images.forEach((image, i) => {
+                    if (image != null && moves[i] != '') {
+                        image.src = moves[i] === 'o' ? "Images/o_disabled.png" : "Images/x_disabled.png";
+                    }
+                })
+                setTimeout(() => alert('Draw\nNo one won, it\'s a draw.'), 50);
+                return;
+            }
+
+            var winImages = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ];
+
+            images.forEach((image, i) => {
+                if (image != null) {
+                    var contained = false;
+                    winImages[winCase].forEach((element) => {
+                        if (element === i) {
+                            contained = true;
+                        };
+                    });
+                    if (!contained) {
+                        image.src = moves[i] === 'o' ? "Images/o_disabled.png" : "Images/x_disabled.png";
+                    }
+                }
+            });
+
+            winner = turn === 'o' ? 'x' : 'o';
+            setTimeout(() => alert('Win\nThe player ' + winner + ' has won!'), 50);
+        }
+    </script>
+</body>
+</html>
